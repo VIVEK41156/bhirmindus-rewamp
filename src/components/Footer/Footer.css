@@ -1,0 +1,342 @@
+/* ============================================
+   BIRMINGHAM INDUSTRIES — Footer
+   Premium 3D Layout with GSAP Reveal
+   ============================================ */
+
+.footer {
+  position: relative;
+  width: 100%;
+  background-color: #03040C; /* Slightly darker than main body for depth */
+  color: #ffffff;
+  padding: var(--space-3xl) 0 var(--space-xl);
+  overflow: hidden;
+  /* Perspective container for the 3D staggered reveal */
+  perspective: 1400px; 
+}
+
+/* ─── Main Container ─── */
+.footer__container {
+  position: relative;
+  z-index: 10;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+/* ─── Foreground Logo Stamp Row ─── */
+.footer__logo-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-3xl);
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+.footer__stamp-container {
+  width: 280px;
+  max-width: 100%;
+  margin-bottom: var(--space-md);
+  /* Use perspective here for the stamp bounce if needed */
+  perspective: 1000px;
+}
+
+.footer__foreground-stamp {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  /* GSAP handles scale, opacity, and rotation */
+  will-change: transform, opacity, filter;
+  filter: drop-shadow(0 15px 30px rgba(45, 45, 150, 0.4));
+}
+
+.footer__tagline {
+  font-family: var(--font-accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ─── Grid Layout ─── */
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr;
+  gap: var(--space-2xl);
+  margin-bottom: var(--space-3xl);
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  will-change: transform, opacity;
+}
+
+.footer__heading {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: var(--space-md);
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.footer__heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--color-crimson);
+}
+
+.footer__heading--margin {
+  margin-top: var(--space-xl);
+}
+
+/* ─── Links & Contact Info ─── */
+.footer__links,
+.footer__contact-info {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer__links a,
+.footer__contact-info a {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.3s ease, transform 0.3s ease;
+  display: inline-block;
+}
+
+.footer__links a:hover,
+.footer__contact-info a:hover {
+  color: #ffffff;
+  transform: translateX(5px);
+}
+
+.footer__contact-info li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.footer__whatsapp-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  /* Add subtle brightness if needed to match dark theme, but preserve original colors */
+  filter: drop-shadow(0 2px 4px rgba(37, 211, 102, 0.3));
+}
+
+/* ─── Global Offices Grid ─── */
+.footer__offices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+.footer__office h4 {
+  font-family: var(--font-accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer__office .highlight {
+  color: var(--color-royal-blue-light);
+  font-weight: 400;
+  text-transform: none;
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+.footer__office p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+}
+
+/* ─── Real Google Map Iframe Wrap ─── */
+.footer__col--map {
+  align-items: flex-start;
+}
+
+.footer__real-map-wrap {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  /* 3D styling for the map box */
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.5),
+    0 5px 15px rgba(45, 45, 150, 0.2);
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+}
+
+.footer__real-map-wrap iframe {
+  width: 100%;
+  height: 100%;
+  /* Optional: slightly dim map to fit dark theme better until hovered */
+  filter: contrast(1.1) opacity(0.85);
+  transition: filter 0.4s ease;
+}
+
+.footer__real-map-wrap:hover iframe {
+  filter: contrast(1) opacity(1);
+}
+
+/* Overlay Link at bottom of map */
+.footer__map-overlay-link {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(3, 4, 12, 0.9) 0%, transparent 100%);
+  padding: 30px 15px 15px;
+  text-align: center;
+  text-decoration: none;
+  color: #ffffff;
+  font-family: var(--font-accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; /* Let clicks pass through to map unless hovering the bar */
+}
+
+.footer__map-overlay-link span {
+  pointer-events: auto;
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--color-crimson);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(195, 45, 30, 0.4);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.footer__map-overlay-link span:hover {
+  background: var(--color-crimson-dark);
+  transform: scale(1.05);
+}
+
+.footer__real-map-wrap:hover .footer__map-overlay-link {
+  transform: translateY(0);
+}
+
+/* ─── Bottom Row: Socials & Copyright ─── */
+.footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-xl);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  will-change: transform, opacity;
+}
+
+.footer__socials {
+  display: flex;
+  gap: 16px;
+}
+
+.footer__social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover color reveal */
+.footer__social-link.facebook:hover {
+  background: #1877F2;
+  color: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(24, 119, 242, 0.3);
+}
+
+.footer__social-link.twitter:hover {
+  background: #1DA1F2;
+  color: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(29, 161, 242, 0.3);
+}
+
+.footer__social-link.linkedin:hover {
+  background: #0A66C2;
+  color: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(10, 102, 194, 0.3);
+}
+
+.footer__social-link.website:hover {
+  background: var(--color-royal-blue);
+  color: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(45, 45, 150, 0.3);
+}
+
+.footer__copyright {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1.5fr;
+  }
+  .footer__col--map {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .footer__col--map {
+    grid-column: span 1;
+  }
+  
+  .footer__offices-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  .footer__bottom {
+    flex-direction: column;
+    gap: var(--space-md);
+    text-align: center;
+  }
+  
+  .footer__stamp-container {
+    width: 220px;
+  }
+}
+

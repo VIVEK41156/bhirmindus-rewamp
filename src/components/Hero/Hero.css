@@ -1,0 +1,503 @@
+/* ============================================
+   BIRMINGHAM INDUSTRIES — Hero Section
+   Full-screen video bg + 3D GSAP text animation
+   ============================================ */
+
+/* ─── Section ─── */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #06071A;
+}
+
+/* ─── Video Background ─── */
+.hero__video-wrap {
+  position: absolute;
+  inset: -5%; /* Extra room for mouse parallax movement */
+  z-index: 0;
+  overflow: hidden;          /* Clip video to hero bounds */
+  clip-path: inset(0 0 0 0); /* Belt + braces */
+}
+
+.hero__bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  will-change: transform;
+}
+
+/* ─── Overlay layers ─── */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(6, 7, 26, 0.52);
+  transition: opacity 0.1s linear;
+}
+
+.hero__overlay-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(180deg,
+      rgba(6, 7, 26, 0.25) 0%,
+      transparent         30%,
+      transparent         65%,
+      rgba(6, 7, 26, 0.70) 85%,
+      rgba(6, 7, 26, 1.00) 100%
+    ),
+    linear-gradient(90deg,
+      rgba(6, 7, 26, 0.45) 0%,
+      transparent          60%
+    );
+}
+
+/* Subtle noise grain for premium film texture */
+.hero__noise {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+}
+
+/* ─── Region Badges (top right) ─── */
+.hero__badges {
+  position: absolute;
+  top: 110px;
+  right: var(--space-xl);
+  z-index: 10;
+  display: flex;
+  gap: var(--space-sm);
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.hero__badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-full);
+  font-family: var(--font-accent);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.80);
+}
+
+/* ─── Main Content ─── */
+.hero__content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1300px;
+  padding: 0 var(--space-xl);
+  margin: 0 auto;
+  will-change: transform, opacity;
+}
+
+/* ─── Eyebrow ─── */
+.hero__eyebrow {
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-crimson-light);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.hero__eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 32px;
+  height: 1px;
+  background: var(--color-crimson);
+}
+
+/* ─── 3D Title ─── */
+.hero__title {
+  perspective: 900px;
+  margin-bottom: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Line rows */
+.hero__line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.hero__line--one {
+  gap: 0.28em;
+  align-items: baseline;
+}
+
+.hero__line--two {
+  gap: 0.20em;
+  align-items: baseline;
+  /* Offset right to create visual tension */
+  padding-left: clamp(0.5rem, 4vw, 5rem);
+}
+
+/* Each word row */
+.hero__word {
+  overflow: hidden;
+  line-height: 0.88;
+  padding-bottom: 0.06em;
+}
+
+/* Word inner — what gets animated (3D flip) */
+.hero__word-inner {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+  line-height: 0.90;
+}
+
+/* Line 1 word 0: SOURCING — large italic dim */
+.hero__line--one .hero__word:nth-child(1) .hero__word-inner {
+  font-size: clamp(2.8rem, 7vw, 6.5rem);
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.40);
+  letter-spacing: 0.10em;
+}
+
+/* Line 1 word 1: EXCELLENCE — massive bold white */
+.hero__line--one .hero__word:nth-child(2) .hero__word-inner {
+  font-size: clamp(4.5rem, 13vw, 12rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+}
+
+/* Line 2 word 0: MANUFACTURING — small tracked */
+.hero__line--two .hero__word:nth-child(1) .hero__word-inner {
+  font-size: clamp(1.6rem, 4.5vw, 3.8rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.22em;
+  font-style: italic;
+}
+
+/* Line 2 word 1: SUCCESS — large gradient brand color */
+.hero__line--two .hero__word:nth-child(2) .hero__word-inner {
+  font-size: clamp(3.5rem, 10vw, 9.5rem);
+  font-weight: 900;
+  background: linear-gradient(
+    120deg,
+    var(--color-royal-blue-light) 0%,
+    #d0d8ff                       35%,
+    #ffffff                       55%,
+    var(--color-crimson-light)    100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.03em;
+}
+
+/* ─── Tagline ─── */
+.hero__tagline {
+  font-family: var(--font-accent);
+  font-size: clamp(0.72rem, 1.4vw, 0.85rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.50);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2xl);
+  clip-path: inset(0 100% 0 0);
+}
+
+/* ─── CTA Buttons ─── */
+.hero__cta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.hero__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-accent);
+  font-size: 0.80rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+  padding: 13px var(--space-xl);
+  cursor: pointer;
+  transition:
+    transform var(--dur-normal) var(--ease-spring),
+    box-shadow var(--dur-normal) var(--ease-smooth),
+    filter var(--dur-normal);
+  text-decoration: none;
+}
+
+.hero__btn--primary {
+  background: linear-gradient(
+    135deg,
+    var(--color-royal-blue) 0%,
+    var(--color-royal-blue-light) 60%,
+    var(--color-crimson) 100%
+  );
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 6px 28px rgba(45, 45, 150, 0.45);
+}
+
+.hero__btn--primary:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 12px 40px rgba(45, 45, 150, 0.6), 0 4px 16px rgba(195, 45, 30, 0.3);
+  filter: brightness(1.1);
+}
+
+.hero__btn--outline {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.hero__btn--outline:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+
+/* ─── Scroll Indicator ─── */
+.hero__scroll-indicator {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero__scroll-line {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.60) 0%, transparent 100%);
+  animation: heroScrollPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes heroScrollPulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(1);   }
+  50%       { opacity: 1.0; transform: scaleY(1.15); }
+}
+
+.hero__scroll-indicator span {
+  font-family: var(--font-accent);
+  font-size: 0.60rem;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ─── Certification Strip ─── */
+.hero__cert-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: var(--space-md) var(--space-xl);
+  background: rgba(6, 7, 26, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-wrap: wrap;
+}
+
+.hero__cert-tag {
+  font-family: var(--font-accent);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  padding: 0 var(--space-lg);
+  border-right: 1px solid rgba(255, 255, 255, 0.10);
+  transition: color var(--dur-normal);
+}
+
+.hero__cert-tag:last-child {
+  border-right: none;
+}
+
+.hero__cert-tag:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ─── Responsive: Tablet ─── */
+@media (max-width: 768px) {
+
+  .hero__content {
+    padding: 0 var(--space-md);
+  }
+
+  /* Badges — horizontal row below hamburger */
+  .hero__badges {
+    top: 90px;
+    right: var(--space-sm);
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 5px;
+    max-width: 200px;
+  }
+
+  .hero__badge {
+    padding: 4px 9px;
+    font-size: 0.58rem;
+  }
+
+  /* Line 2 offset — remove on mobile, avoid overflow */
+  .hero__line--two {
+    padding-left: 0;
+  }
+
+  /* ── Font size overrides for mobile ── */
+
+  /* SOURCING — italic dim label */
+  .hero__line--one .hero__word:nth-child(1) .hero__word-inner {
+    font-size: clamp(1.1rem, 5.5vw, 2.2rem);
+    letter-spacing: 0.06em;
+  }
+
+  /* EXCELLENCE — main title, must fit within screen width */
+  .hero__line--one .hero__word:nth-child(2) .hero__word-inner {
+    font-size: clamp(2.2rem, 9.5vw, 4rem);
+    letter-spacing: -0.02em;
+  }
+
+  /* MANUFACTURING — tiny italic */
+  .hero__line--two .hero__word:nth-child(1) .hero__word-inner {
+    font-size: clamp(0.75rem, 3.2vw, 1.4rem);
+    letter-spacing: 0.12em;
+  }
+
+  /* SUCCESS — gradient big word */
+  .hero__line--two .hero__word:nth-child(2) .hero__word-inner {
+    font-size: clamp(1.9rem, 8.5vw, 3.5rem);
+    letter-spacing: -0.02em;
+  }
+
+  /* Tagline */
+  .hero__tagline {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-xl);
+  }
+
+  /* CTA stack vertically */
+  .hero__cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .hero__btn {
+    padding: 11px var(--space-lg);
+    font-size: 0.74rem;
+  }
+
+  .hero__scroll-indicator {
+    bottom: 72px;
+  }
+
+  /* Cert strip — scrollable on mobile */
+  .hero__cert-strip {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: var(--space-sm) var(--space-md);
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hero__cert-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero__cert-tag {
+    padding: 0 var(--space-md);
+    font-size: 0.58rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* ─── Responsive: Small mobile ─── */
+@media (max-width: 400px) {
+
+  /* SOURCING */
+  .hero__line--one .hero__word:nth-child(1) .hero__word-inner {
+    font-size: 1rem;
+  }
+
+  /* EXCELLENCE */
+  .hero__line--one .hero__word:nth-child(2) .hero__word-inner {
+    font-size: 8.5vw;
+  }
+
+  /* MANUFACTURING */
+  .hero__line--two .hero__word:nth-child(1) .hero__word-inner {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* SUCCESS */
+  .hero__line--two .hero__word:nth-child(2) .hero__word-inner {
+    font-size: 8vw;
+  }
+
+  .hero__eyebrow {
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+  }
+
+  .hero__eyebrow::before {
+    width: 20px;
+  }
+}
+

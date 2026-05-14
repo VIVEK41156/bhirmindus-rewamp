@@ -1,0 +1,212 @@
+/* ============================================
+   BIRMINGHAM INDUSTRIES — Partners Carousel
+   3D Infinite Scroll Marquee
+   ============================================ */
+
+.partners {
+  position: relative;
+  width: 100%;
+  padding: var(--space-3xl) 0;
+  background: #06071A;
+  overflow: hidden;
+  z-index: 5;
+}
+
+/* ─── Ambient Glow ─── */
+.partners__bg-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(45, 45, 150, 0.15) 0%, transparent 60%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Layout ─── */
+.partners__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ─── Heading ─── */
+.partners__heading {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+  padding: 0 var(--space-xl);
+}
+
+.partners__eyebrow {
+  display: inline-block;
+  font-family: var(--font-accent);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-crimson-light);
+  margin-bottom: var(--space-sm);
+  position: relative;
+}
+
+.partners__eyebrow::before,
+.partners__eyebrow::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 28px;
+  height: 1px;
+  background: var(--color-crimson);
+  transform: translateY(-50%);
+}
+
+.partners__eyebrow::before { right: calc(100% + 10px); }
+.partners__eyebrow::after  { left:  calc(100% + 10px); }
+
+.partners__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-top: var(--space-xs);
+}
+
+/* ─── 3D Carousel Wrapper ─── */
+.partners__carousel-wrapper {
+  position: relative;
+  width: 100%;
+  /* Creates a 3D context for the entire track to tilt */
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  /* Extra padding to allow 3D cards to fly out without clipping */
+  padding: 40px 0; 
+  will-change: transform;
+}
+
+/* ─── Track ─── */
+.partners__carousel-track {
+  display: flex;
+  gap: 30px;
+  width: max-content;
+  align-items: center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ─── Individual Logo Card ─── */
+.partners__card {
+  width: 220px;
+  height: 110px;
+  flex-shrink: 0;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+.partners__card-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 30px;
+  
+  /* Premium Glassmorphism Look */
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+}
+
+.partners__card:hover .partners__card-inner {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 16px 48px rgba(45, 45, 150, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Logo Image ─── */
+.partners__card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  /* Make them blend well by default, light up on hover */
+  filter: grayscale(100%) brightness(1.5) opacity(0.6);
+  transition: filter 0.4s ease;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ─── Edge Fades ─── */
+.partners__fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 15%;
+  min-width: 100px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.partners__fade--left {
+  left: 0;
+  background: linear-gradient(to right, #06071A 0%, transparent 100%);
+}
+
+.partners__fade--right {
+  right: 0;
+  background: linear-gradient(to left, #06071A 0%, transparent 100%);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .partners__card {
+    width: 180px;
+    height: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .partners {
+    padding: var(--space-2xl) 0;
+  }
+  
+  .partners__heading {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .partners__carousel-track {
+    gap: 20px;
+  }
+  
+  .partners__card {
+    width: 150px;
+    height: 80px;
+  }
+  
+  .partners__card-inner {
+    padding: 15px 20px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .partners__card {
+    width: 120px;
+    height: 65px;
+  }
+  
+  .partners__fade {
+    width: 10%;
+  }
+}

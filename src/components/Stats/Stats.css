@@ -1,0 +1,115 @@
+/* ============================================
+   BIRMINGHAM INDUSTRIES — Stats Bar
+   Sits BELOW Hero, solid bg covers gap
+   GSAP handles all animation
+   ============================================ */
+
+/* ─── Section wrapper — solid dark bg, no gap ─── */
+.stats {
+  position: relative;
+  z-index: 10;
+  background: #06071A;          /* Matches page bg — kills the video gap */
+  padding: 0 var(--space-xl) var(--space-2xl);
+  margin-top: -2px;             /* 1px overlap to kill any sub-pixel seam */
+  perspective: 1000px;          /* 3D context for the bar animation */
+}
+
+/* ─── The bar itself ─── */
+.stats__bar {
+  max-width: 1060px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  align-items: center;
+
+  /* Royal blue — matches reference */
+  background: linear-gradient(120deg, #1a1a7a 0%, #2D2D96 50%, #1a1a7a 100%);
+  border-radius: 14px;
+  padding: 36px 48px;
+
+  box-shadow:
+    0 24px 64px rgba(45, 45, 150, 0.55),
+    0 4px 0px  rgba(195, 45, 30, 0.85),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  
+  /* GSAP controls visibility and 3D completely */
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* ─── Vertical divider ─── */
+.stats__divider {
+  width: 1px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.25);
+  justify-self: center;
+}
+
+/* ─── Stat cell ─── */
+.stats__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 0 var(--space-xl);
+  cursor: default;
+}
+
+/* ─── Number ─── */
+.stats__number {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  display: block;
+}
+
+/* ─── Label ─── */
+.stats__label {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-accent);
+  font-size: clamp(0.68rem, 1.2vw, 0.80rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .stats {
+    padding: 0 var(--space-md) var(--space-xl);
+  }
+
+  .stats__bar {
+    padding: 24px 16px;
+    border-radius: 10px;
+  }
+
+  .stats__item    { padding: 0 var(--space-sm); gap: 5px; }
+  .stats__divider { height: 40px; }
+
+  .stats__number  { font-size: clamp(1.8rem, 7.5vw, 2.8rem); }
+  .stats__label   { font-size: 0.60rem; }
+}
+
+@media (max-width: 480px) {
+  .stats {
+    padding: 0 var(--space-sm) var(--space-lg);
+  }
+
+  .stats__bar {
+    padding: 18px 10px;
+    border-radius: 8px;
+  }
+
+  .stats__number  { font-size: 1.7rem; }
+  .stats__label   { font-size: 0.54rem; letter-spacing: 0.02em; }
+  .stats__divider { height: 30px; }
+}
