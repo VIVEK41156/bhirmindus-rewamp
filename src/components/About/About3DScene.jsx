@@ -1,7 +1,6 @@
 import { useRef, useLayoutEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Stars, TorusKnot, Sphere, Box, Points, PointMaterial } from '@react-three/drei';
-import * as THREE from 'three';
+import { Float, Stars, TorusKnot, Sphere, Box, Points, PointMaterial, useGLTF } from '@react-three/drei';
 import gsap from 'gsap';
 
 // Immersive Star Tunnel / Particle Field
@@ -31,6 +30,16 @@ function TunnelParticles() {
       <PointMaterial transparent color="#ffffff" size={0.08} sizeAttenuation={true} depthWrite={false} opacity={0.6} />
     </points>
   );
+}
+
+function GlobeModel(props) {
+  const { scene } = useGLTF('/models/earth_globe_-_atlas.glb');
+  return <primitive object={scene} {...props} />;
+}
+
+function CargoModel(props) {
+  const { scene } = useGLTF('/models/cargo_container_long.glb');
+  return <primitive object={scene} {...props} />;
 }
 
 function SceneObjects({ scrollProgress }) {
@@ -76,14 +85,7 @@ function SceneObjects({ scrollProgress }) {
         {/* Section 1: Global Presence (z: 0) */}
         <group position={[2, 0, 0]}>
           <Float speed={2} rotationIntensity={2} floatIntensity={2}>
-            <mesh>
-              <sphereGeometry args={[2, 32, 32]} />
-              <meshStandardMaterial color="#2d5a9e" wireframe transparent opacity={0.5} />
-              <mesh>
-                <sphereGeometry args={[1.9, 16, 16]} />
-                <meshStandardMaterial color="#020308" roughness={0.1} metalness={0.8} />
-              </mesh>
-            </mesh>
+            <GlobeModel scale={0.5} />
           </Float>
         </group>
 
@@ -116,14 +118,7 @@ function SceneObjects({ scrollProgress }) {
         {/* Section 4: Logistics (z: -45) */}
         <group position={[-2, 0, -45]}>
           <Float speed={4} rotationIntensity={2} floatIntensity={2}>
-            <mesh>
-              <boxGeometry args={[3, 3, 3]} />
-              <meshStandardMaterial color="#1a1a1a" roughness={0.1} metalness={1} />
-            </mesh>
-            <mesh scale={1.05}>
-              <boxGeometry args={[3, 3, 3]} />
-              <meshBasicMaterial color="#00ffcc" wireframe transparent opacity={0.4} />
-            </mesh>
+            <CargoModel scale={1} />
           </Float>
         </group>
 
@@ -184,3 +179,6 @@ function CameraController({ scrollProgress }) {
   });
   return null;
 }
+
+useGLTF.preload('/models/earth_globe_-_atlas.glb');
+useGLTF.preload('/models/cargo_container_long.glb');
