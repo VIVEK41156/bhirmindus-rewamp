@@ -1,78 +1,108 @@
 import { useRef, useLayoutEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Float, Stars, MeshDistortMaterial, Sphere, Box } from '@react-three/drei';
+import { Float, Stars, Sphere, Box, Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 
-function SceneObjects({ scrollProgress }) {
-  const groupRef = useRef();
-  const earthRef = useRef();
-  const moleculeRef = useRef();
-  const grainRef = useRef();
-  const boxRef = useRef();
-  const shieldRef = useRef();
+// A premium abstract particle field to replace the generic HDRI reflections
+function ParticleField() {
+  const ref = useRef();
+  const count = 2000;
+  const positions = new Float32Array(count * 3);
+  
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
 
   useFrame((state, delta) => {
-    // Slowly rotate the entire group for a constant ambient feel
+    if (ref.current) {
+      ref.current.rotation.y += delta * 0.02;
+      ref.current.rotation.x += delta * 0.01;
+    }
+  });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+      </bufferGeometry>
+      <PointMaterial transparent color="#4a90e2" size={0.05} sizeAttenuation={true} depthWrite={false} />
+    </points>
+  );
+}
+
+function SceneObjects({ scrollProgress }) {
+  const groupRef = useRef();
+  
+  // Create refs for our abstract geometric representations
+  const globalRef = useRef();
+  const capacityRef = useRef();
+  const supplyRef = useRef();
+  const logisticsRef = useRef();
+  const qualityRef = useRef();
+
+  useFrame((state, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.05;
-      groupRef.current.rotation.x += delta * 0.02;
+      // Very slow ambient rotation for the whole group
+      groupRef.current.rotation.y += delta * 0.1;
     }
   });
 
   useLayoutEffect(() => {
     if (!groupRef.current) return;
 
-    // We use scrollProgress (0 to 1) to animate visibility and rotation of different objects
     const ctx = gsap.context(() => {
-      // 0.0 to 0.2: Global Presence (Earth-like sphere)
-      gsap.to(earthRef.current.scale, {
-        x: scrollProgress < 0.25 ? 1 : 0,
-        y: scrollProgress < 0.25 ? 1 : 0,
-        z: scrollProgress < 0.25 ? 1 : 0,
-        duration: 0.5,
+      // 1. Global Presence
+      gsap.to(globalRef.current.scale, {
+        x: scrollProgress < 0.25 ? 1 : 0.001,
+        y: scrollProgress < 0.25 ? 1 : 0.001,
+        z: scrollProgress < 0.25 ? 1 : 0.001,
+        duration: 0.8,
         ease: 'power2.out'
       });
 
-      // 0.2 to 0.4: Production (Molecules/distorted sphere)
-      gsap.to(moleculeRef.current.scale, {
-        x: scrollProgress >= 0.2 && scrollProgress < 0.45 ? 1 : 0,
-        y: scrollProgress >= 0.2 && scrollProgress < 0.45 ? 1 : 0,
-        z: scrollProgress >= 0.2 && scrollProgress < 0.45 ? 1 : 0,
-        duration: 0.5,
+      // 2. Massive Capacity (Abstract Core)
+      gsap.to(capacityRef.current.scale, {
+        x: scrollProgress >= 0.2 && scrollProgress < 0.45 ? 1 : 0.001,
+        y: scrollProgress >= 0.2 && scrollProgress < 0.45 ? 1 : 0.001,
+        z: scrollProgress >= 0.2 && scrollProgress < 0.45 ? 1 : 0.001,
+        duration: 0.8,
         ease: 'power2.out'
       });
 
-      // 0.4 to 0.6: Supply (Floating grains/small spheres)
-      gsap.to(grainRef.current.scale, {
-        x: scrollProgress >= 0.4 && scrollProgress < 0.65 ? 1 : 0,
-        y: scrollProgress >= 0.4 && scrollProgress < 0.65 ? 1 : 0,
-        z: scrollProgress >= 0.4 && scrollProgress < 0.65 ? 1 : 0,
-        duration: 0.5,
+      // 3. Supply Staples (Organic Array)
+      gsap.to(supplyRef.current.scale, {
+        x: scrollProgress >= 0.4 && scrollProgress < 0.65 ? 1 : 0.001,
+        y: scrollProgress >= 0.4 && scrollProgress < 0.65 ? 1 : 0.001,
+        z: scrollProgress >= 0.4 && scrollProgress < 0.65 ? 1 : 0.001,
+        duration: 0.8,
         ease: 'power2.out'
       });
 
-      // 0.6 to 0.8: Freight (Geometric Box)
-      gsap.to(boxRef.current.scale, {
-        x: scrollProgress >= 0.6 && scrollProgress < 0.85 ? 1 : 0,
-        y: scrollProgress >= 0.6 && scrollProgress < 0.85 ? 1 : 0,
-        z: scrollProgress >= 0.6 && scrollProgress < 0.85 ? 1 : 0,
-        duration: 0.5,
+      // 4. Logistics (Tech Rings)
+      gsap.to(logisticsRef.current.scale, {
+        x: scrollProgress >= 0.6 && scrollProgress < 0.85 ? 1 : 0.001,
+        y: scrollProgress >= 0.6 && scrollProgress < 0.85 ? 1 : 0.001,
+        z: scrollProgress >= 0.6 && scrollProgress < 0.85 ? 1 : 0.001,
+        duration: 0.8,
         ease: 'power2.out'
       });
 
-      // 0.8 to 1.0: QA (Shield/Torus)
-      gsap.to(shieldRef.current.scale, {
-        x: scrollProgress >= 0.8 ? 1 : 0,
-        y: scrollProgress >= 0.8 ? 1 : 0,
-        z: scrollProgress >= 0.8 ? 1 : 0,
-        duration: 0.5,
+      // 5. Quality (Golden Diamond)
+      gsap.to(qualityRef.current.scale, {
+        x: scrollProgress >= 0.8 ? 1 : 0.001,
+        y: scrollProgress >= 0.8 ? 1 : 0.001,
+        z: scrollProgress >= 0.8 ? 1 : 0.001,
+        duration: 0.8,
         ease: 'power2.out'
       });
 
-      // Camera depth effect based on scroll
+      // Camera parallax
       gsap.to(groupRef.current.position, {
-        z: Math.sin(scrollProgress * Math.PI) * 2,
+        z: Math.sin(scrollProgress * Math.PI) * 1.5,
+        y: -scrollProgress * 2,
         duration: 0.5
       });
     });
@@ -82,55 +112,73 @@ function SceneObjects({ scrollProgress }) {
 
   return (
     <group ref={groupRef}>
-      {/* 1. Global Presence */}
-      <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-        <mesh ref={earthRef} scale={1}>
-          <sphereGeometry args={[1.5, 64, 64]} />
-          <meshStandardMaterial color="#2d5a9e" wireframe transparent opacity={0.8} />
+      {/* 1. Global Presence: Wireframe Globe */}
+      <Float speed={2} rotationIntensity={1} floatIntensity={1}>
+        <mesh ref={globalRef} scale={1}>
+          <sphereGeometry args={[1.5, 32, 32]} />
+          <meshBasicMaterial color="#4a90e2" wireframe transparent opacity={0.3} />
           <mesh>
-            <sphereGeometry args={[1.45, 32, 32]} />
-            <meshStandardMaterial color="#0a1930" roughness={0.2} metalness={0.8} />
+            <sphereGeometry args={[1.4, 16, 16]} />
+            <meshStandardMaterial color="#0a1930" roughness={0.8} />
           </mesh>
         </mesh>
       </Float>
 
-      {/* 2. Production (Starch/Molecule) */}
+      {/* 2. Capacity: Industrial Core */}
       <Float speed={3} rotationIntensity={2} floatIntensity={1.5}>
-        <mesh ref={moleculeRef} scale={0}>
-          <sphereGeometry args={[1.5, 64, 64]} />
-          <MeshDistortMaterial color="#ffffff" envMapIntensity={1} clearcoat={1} clearcoatRoughness={0} metalness={0.8} roughness={0.1} distort={0.4} speed={2} />
-        </mesh>
-      </Float>
-
-      {/* 3. Supply (Organic grains) */}
-      <group ref={grainRef} scale={0}>
-        {[...Array(15)].map((_, i) => (
-          <Float key={i} speed={2 + Math.random()} rotationIntensity={2} floatIntensity={2} position={[(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4]}>
-            <mesh>
-              <capsuleGeometry args={[0.2, 0.4, 16, 16]} />
-              <meshStandardMaterial color="#d4af37" roughness={0.3} metalness={0.5} />
-            </mesh>
-          </Float>
-        ))}
-      </group>
-
-      {/* 4. Freight/Logistics */}
-      <Float speed={1.5} rotationIntensity={1} floatIntensity={1}>
-        <group ref={boxRef} scale={0}>
-          <Box args={[2, 1, 1]} radius={0.05} smoothness={4}>
-            <meshStandardMaterial color="#1a1a1a" roughness={0.1} metalness={0.8} />
-          </Box>
-          <Box args={[2.05, 1.05, 1.05]} radius={0.05} smoothness={4}>
-            <meshStandardMaterial color="#4a90e2" wireframe transparent opacity={0.3} />
-          </Box>
+        <group ref={capacityRef} scale={0.001}>
+          <mesh>
+            <icosahedronGeometry args={[1.5, 0]} />
+            <meshStandardMaterial color="#1f4b8e" wireframe />
+          </mesh>
+          <mesh>
+            <octahedronGeometry args={[1.2, 0]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.8} />
+          </mesh>
         </group>
       </Float>
 
-      {/* 5. Quality Assurance */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-        <mesh ref={shieldRef} scale={0}>
-          <torusKnotGeometry args={[1, 0.3, 128, 32]} />
-          <meshStandardMaterial color="#ffd700" roughness={0.1} metalness={1} envMapIntensity={2} />
+      {/* 3. Supply Staples: Floating Array */}
+      <group ref={supplyRef} scale={0.001}>
+        <Float speed={2} rotationIntensity={3} floatIntensity={2}>
+          <mesh position={[-1, 1, 0]}>
+            <capsuleGeometry args={[0.3, 0.8, 16, 16]} />
+            <meshStandardMaterial color="#d4af37" roughness={0.4} metalness={0.6} />
+          </mesh>
+          <mesh position={[1, -1, 0]}>
+            <capsuleGeometry args={[0.3, 0.8, 16, 16]} />
+            <meshStandardMaterial color="#d4af37" roughness={0.4} metalness={0.6} />
+          </mesh>
+          <mesh position={[0, 0, 1]}>
+            <capsuleGeometry args={[0.3, 0.8, 16, 16]} />
+            <meshStandardMaterial color="#d4af37" roughness={0.4} metalness={0.6} />
+          </mesh>
+        </Float>
+      </group>
+
+      {/* 4. Logistics: Concentric Tech Rings */}
+      <Float speed={1.5} rotationIntensity={1.5} floatIntensity={1}>
+        <group ref={logisticsRef} scale={0.001}>
+          <mesh rotation-x={Math.PI / 2}>
+            <torusGeometry args={[1.5, 0.05, 16, 100]} />
+            <meshStandardMaterial color="#00ffcc" emissive="#00ffcc" emissiveIntensity={0.5} />
+          </mesh>
+          <mesh rotation-y={Math.PI / 2}>
+            <torusGeometry args={[1.2, 0.05, 16, 100]} />
+            <meshStandardMaterial color="#4a90e2" emissive="#4a90e2" emissiveIntensity={0.5} />
+          </mesh>
+        </group>
+      </Float>
+
+      {/* 5. Quality Assurance: Premium Diamond */}
+      <Float speed={2} rotationIntensity={1} floatIntensity={2}>
+        <mesh ref={qualityRef} scale={0.001}>
+          <octahedronGeometry args={[1.2, 0]} />
+          <meshStandardMaterial color="#ffd700" roughness={0.1} metalness={0.9} />
+          <mesh scale={1.1}>
+            <octahedronGeometry args={[1.2, 0]} />
+            <meshBasicMaterial color="#ffffff" wireframe transparent opacity={0.2} />
+          </mesh>
         </mesh>
       </Float>
     </group>
@@ -139,13 +187,15 @@ function SceneObjects({ scrollProgress }) {
 
 export default function About3DScene({ scrollProgress }) {
   return (
-    <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+    <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
       <color attach="background" args={['#020308']} />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[10, 10, 10]} intensity={1.5} color="#ffffff" />
       <directionalLight position={[-10, -10, -5]} intensity={0.5} color="#4a90e2" />
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-      <Environment preset="city" />
+      
+      {/* Abstract particle field background instead of realistic stars or cities */}
+      <ParticleField />
+      
       <SceneObjects scrollProgress={scrollProgress} />
     </Canvas>
   );
