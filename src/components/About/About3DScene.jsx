@@ -1,186 +1,123 @@
-import { useRef, useLayoutEffect, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Stars, TorusKnot, Sphere, Box, Points, PointMaterial, useGLTF } from '@react-three/drei';
-import gsap from 'gsap';
+import { useRef, Suspense } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Image } from '@react-three/drei';
+import * as THREE from 'three';
+import { ABOUT_SECTIONS } from './aboutSections';
 
-// Immersive Star Tunnel / Particle Field
-function TunnelParticles() {
-  const ref = useRef();
-  const count = 3000;
-  const positions = new Float32Array(count * 3);
-  
-  for (let i = 0; i < count; i++) {
-    // Distribute particles in a long tunnel along the Z axis
-    positions[i * 3] = (Math.random() - 0.5) * 30; // X
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 30; // Y
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 60; // Z (deep tunnel)
-  }
+const PANEL_SCALE = [4.2, 2.45, 1];
 
-  useFrame((state, delta) => {
-    if (ref.current) {
-      ref.current.rotation.z += delta * 0.05;
-    }
+function lerpWaypoint(progress, key) {
+  const t = progress * (ABOUT_SECTIONS.length - 1);
+  const i = Math.min(Math.floor(t), ABOUT_SECTIONS.length - 2);
+  const alpha = t - i;
+  const from = ABOUT_SECTIONS[i].camera[key];
+  const to = ABOUT_SECTIONS[i + 1].camera[key];
+  return [
+    THREE.MathUtils.lerp(from[0], to[0], alpha),
+    THREE.MathUtils.lerp(from[1], to[1], alpha),
+    THREE.MathUtils.lerp(from[2], to[2], alpha),
+  ];
+}
+
+function ScrollCamera({ scrollProgress }) {
+  const { camera } = useThree();
+  const lookTarget = useRef(new THREE.Vector3());
+  const pos = useRef(new THREE.Vector3());
+
+  useFrame(() => {
+    const [px, py, pz] = lerpWaypoint(scrollProgress, 'position');
+    const [lx, ly, lz] = lerpWaypoint(scrollProgress, 'lookAt');
+
+    pos.current.set(px, py, pz);
+    lookTarget.current.set(lx, ly, lz);
+
+    camera.position.lerp(pos.current, 0.14);
+    camera.lookAt(lookTarget.current);
+  });
+
+  return null;
+}
+
+function SectionPanel({ section, index, scrollProgress }) {
+  const groupRef = useRef();
+  const focus =
+    ABOUT_SECTIONS.length > 1
+      ? 1 - Math.min(1, Math.abs(scrollProgress * (ABOUT_SECTIONS.length - 1) - index))
+      : 1;
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+    const scale = 0.88 + focus * 0.12;
+    groupRef.current.scale.setScalar(scale);
+    groupRef.current.rotation.y = (1 - focus) * (index % 2 === 0 ? 0.18 : -0.18);
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-      </bufferGeometry>
-      <PointMaterial transparent color="#ffffff" size={0.08} sizeAttenuation={true} depthWrite={false} opacity={0.6} />
-    </points>
+    <group ref={groupRef} position={section.position}>
+      <mesh position={[0, 0, -0.06]}>
+        <planeGeometry args={[PANEL_SCALE[0] + 0.2, PANEL_SCALE[1] + 0.2]} />
+        <meshBasicMaterial color="#2D2D96" transparent opacity={0.35 + focus * 0.25} />
+      </mesh>
+      <Image
+        url={section.image}
+        scale={PANEL_SCALE}
+        transparent
+        opacity={0.55 + focus * 0.45}
+        toneMapped={false}
+      />
+    </group>
   );
 }
 
-function GlobeModel(props) {
-  const { scene } = useGLTF('/models/earth_globe_-_atlas.glb');
-  return <primitive object={scene} {...props} />;
-}
+function SceneContent({ scrollProgress }) {
+  const gridRef = useRef();
 
-function CargoModel(props) {
-  const { scene } = useGLTF('/models/cargo_container_long.glb');
-  return <primitive object={scene} {...props} />;
-}
-
-function SceneObjects({ scrollProgress }) {
-  const cameraGroupRef = useRef();
-  const objectsGroupRef = useRef();
-
-  useFrame((state, delta) => {
-    if (objectsGroupRef.current) {
-      // Gentle ambient rotation for the whole environment
-      objectsGroupRef.current.rotation.y += delta * 0.05;
+  useFrame((_, delta) => {
+    if (gridRef.current) {
+      gridRef.current.position.z = THREE.MathUtils.lerp(
+        gridRef.current.position.z,
+        scrollProgress * -18,
+        delta * 2
+      );
     }
   });
 
-  useLayoutEffect(() => {
-    if (!cameraGroupRef.current) return;
-
-    const ctx = gsap.context(() => {
-      // As scrollProgress goes 0 -> 1, the camera group moves deep into the negative Z-axis
-      // We have 5 sections, spread them out every 15 units
-      // Max depth = -60
-      gsap.to(cameraGroupRef.current.position, {
-        z: -(scrollProgress * 60), 
-        duration: 0.5,
-        ease: 'none' // Linear ease for smooth scroll tracking
-      });
-
-      // Add a slight rotation to the camera as it flies through for immersion
-      gsap.to(cameraGroupRef.current.rotation, {
-        z: scrollProgress * Math.PI * 0.5,
-        duration: 0.5,
-        ease: 'none'
-      });
-    });
-
-    return () => ctx.revert();
-  }, [scrollProgress]);
-
   return (
     <>
-      <group ref={objectsGroupRef}>
-        <TunnelParticles />
+      <color attach="background" args={['#06071A']} />
+      <fog attach="fog" args={['#06071A', 12, 70]} />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[6, 8, 4]} intensity={1.1} color="#3D3DB8" />
+      <directionalLight position={[-4, 2, -8]} intensity={0.35} color="#C8A96E" />
 
-        {/* Section 1: Global Presence (z: 0) */}
-        <group position={[2, 0, 0]}>
-          <Float speed={2} rotationIntensity={2} floatIntensity={2}>
-            <GlobeModel scale={0.5} />
-          </Float>
-        </group>
-
-        {/* Section 2: Capacity (z: -15) */}
-        <group position={[-2, 1, -15]}>
-          <Float speed={3} rotationIntensity={3} floatIntensity={2}>
-            <mesh>
-              <icosahedronGeometry args={[2, 1]} />
-              <meshStandardMaterial color="#4a90e2" roughness={0.2} metalness={0.9} />
-            </mesh>
-            <mesh scale={1.2}>
-              <icosahedronGeometry args={[2, 1]} />
-              <meshBasicMaterial color="#ffffff" wireframe transparent opacity={0.1} />
-            </mesh>
-          </Float>
-        </group>
-
-        {/* Section 3: Supply Staples (z: -30) */}
-        <group position={[2, -1, -30]}>
-          <Float speed={2} rotationIntensity={4} floatIntensity={3}>
-            {[...Array(5)].map((_, i) => (
-              <mesh key={i} position={[(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4]}>
-                <capsuleGeometry args={[0.4, 1.2, 16, 16]} />
-                <meshStandardMaterial color="#d4af37" roughness={0.3} metalness={0.7} />
-              </mesh>
-            ))}
-          </Float>
-        </group>
-
-        {/* Section 4: Logistics (z: -45) */}
-        <group position={[-2, 0, -45]}>
-          <Float speed={4} rotationIntensity={2} floatIntensity={2}>
-            <CargoModel scale={1} />
-          </Float>
-        </group>
-
-        {/* Section 5: Quality Assurance (z: -60) */}
-        <group position={[0, 0, -60]}>
-          <Float speed={2} rotationIntensity={2} floatIntensity={2}>
-            <mesh>
-              <torusKnotGeometry args={[2, 0.6, 128, 32]} />
-              <meshStandardMaterial color="#ffd700" roughness={0.1} metalness={1} />
-            </mesh>
-          </Float>
-        </group>
+      <group ref={gridRef} position={[0, -2.2, 0]}>
+        <gridHelper args={[80, 40, '#2D2D96', '#141530']} position={[0, 0, -28]} />
       </group>
 
-      {/* Camera Group that flies through the scene */}
-      <group ref={cameraGroupRef} position={[0, 0, 5]}>
-        {/* We attach lights to the camera so it illuminates wherever we fly */}
-        <pointLight position={[0, 0, 2]} intensity={2} color="#ffffff" distance={20} />
-        <directionalLight position={[10, 10, -5]} intensity={1} color="#4a90e2" />
-        {/* Actual camera is controlled by Canvas, but we manipulate this group to move the viewpoint if we attach a PerspectiveCamera here.
-            Since R3F handles the default camera, a simpler way is to move the default camera directly in the useFrame. */}
-      </group>
+      {ABOUT_SECTIONS.map((section, index) => (
+        <SectionPanel
+          key={section.id}
+          section={section}
+          index={index}
+          scrollProgress={scrollProgress}
+        />
+      ))}
+
+      <ScrollCamera scrollProgress={scrollProgress} />
     </>
   );
 }
 
 export default function About3DScene({ scrollProgress }) {
-  // We need to manipulate the default camera
   return (
-    <Canvas>
-      <color attach="background" args={['#020308']} />
-      <ambientLight intensity={0.2} />
-      
-      <CameraController scrollProgress={scrollProgress} />
+    <Canvas
+      camera={{ position: [0, 0.2, 7.5], fov: 42, near: 0.1, far: 120 }}
+      dpr={[1, 1.5]}
+      gl={{ antialias: true, alpha: false }}
+    >
       <Suspense fallback={null}>
-        <SceneObjects scrollProgress={scrollProgress} />
+        <SceneContent scrollProgress={scrollProgress} />
       </Suspense>
     </Canvas>
   );
 }
-
-// Component to handle camera flying
-function CameraController({ scrollProgress }) {
-  useFrame(({ camera }) => {
-    // Fly the camera from z=8 down to z=-65 based on scroll
-    gsap.to(camera.position, {
-      z: 8 - (scrollProgress * 73),
-      x: Math.sin(scrollProgress * Math.PI * 4) * 0.5, // slight wobble
-      y: Math.cos(scrollProgress * Math.PI * 4) * 0.5,
-      duration: 0.5,
-      ease: 'none'
-    });
-    
-    // Rotate camera to feel like a spaceship barrel roll
-    gsap.to(camera.rotation, {
-      z: scrollProgress * Math.PI * 0.5,
-      duration: 0.5,
-      ease: 'none'
-    });
-  });
-  return null;
-}
-
-useGLTF.preload('/models/earth_globe_-_atlas.glb');
-useGLTF.preload('/models/cargo_container_long.glb');

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import About3DScene from '../components/About/About3DScene';
+import { ABOUT_SECTIONS } from '../components/About/aboutSections';
 import '../components/About/About.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -15,30 +16,35 @@ export default function About() {
     window.scrollTo(0, 0);
 
     const ctx = gsap.context(() => {
-      // Create a master ScrollTrigger for the overall progress
       ScrollTrigger.create({
         trigger: containerRef.current,
-        start: "top top",
-        end: "bottom bottom",
-        onUpdate: (self) => {
-          setScrollProgress(self.progress);
-        }
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.6,
+        onUpdate: (self) => setScrollProgress(self.progress),
       });
 
-      // Animate each section's text content as it enters
-      sectionsRef.current.forEach((section, i) => {
-        gsap.to(section, {
-          scrollTrigger: {
-            trigger: section,
-            start: "top center+=100",
-            end: "bottom center-=100",
-            toggleActions: "play reverse play reverse",
-          },
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power3.out"
-        });
+      sectionsRef.current.forEach((section) => {
+        const card = section.querySelector('.about-card');
+        if (!card) return;
+
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 48, rotateX: 8 },
+          {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 72%',
+              end: 'top 38%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
       });
     }, containerRef);
 
@@ -52,74 +58,66 @@ export default function About() {
   };
 
   return (
-    <div className="about-container" ref={containerRef}>
-      {/* 3D Background */}
-      <div className="about-canvas-container">
+    <div className="about-page" ref={containerRef}>
+      <div className="about-canvas-container" aria-hidden="true">
         <About3DScene scrollProgress={scrollProgress} />
       </div>
 
-      {/* HTML Content Overlay */}
+      <header className="about-hero">
+        <p className="about-hero__eyebrow">About Bhirmindus</p>
+        <h1 className="about-hero__title">Built for global industry</h1>
+        <p className="about-hero__lead">
+          Scroll to journey through our presence, capacity, supply chain, and quality standards.
+        </p>
+        <div className="about-hero__progress" aria-hidden="true">
+          <span
+            className="about-hero__progress-fill"
+            style={{ transform: `scaleX(${scrollProgress})` }}
+          />
+        </div>
+      </header>
+
       <div className="about-content">
-        
-        {/* Section 1: Global Presence */}
-        <section className="about-section" ref={addToRefs}>
-          <div className="about-card">
-            <h2>Global Presence</h2>
-            <p>
-              We are incorporated in the UK, India, and Europe, effectively serving as the export sales function for our investment holding's manufacturing portfolio. Our international reach ensures seamless delivery and unwavering support worldwide.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 2: Production */}
-        <section className="about-section" ref={addToRefs}>
-          <div className="about-card">
-            <h2>Massive Capacity</h2>
-            <p>
-              Our state-of-the-art South Indian facility is capable of producing <strong>8000 tons</strong> of premium industrial and native food-grade starches and starch derivatives. We combine scale with precision engineering to meet the demands of modern industry.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 3: Supply Staples */}
-        <section className="about-section" ref={addToRefs}>
-          <div className="about-card">
-            <h2>Essential Supplies</h2>
-            <p>
-              Beyond industrial derivatives, we supply staple items including high-quality rice and pulses. We proudly serve the education and hospitality sectors across South India, ensuring consistent, top-tier agricultural products.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 4: Logistics */}
-        <section className="about-section" ref={addToRefs}>
-          <div className="about-card">
-            <h2>Global Logistics</h2>
-            <p>
-              Our freight forwarding partner is extremely reliable and highly competent. Whether you need materials locally or shipped anywhere internationally, our robust supply chain guarantees timely and secure delivery.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 5: Quality Assurance */}
-        <section className="about-section" ref={addToRefs}>
-          <div className="about-card">
-            <h2>Uncompromising Quality</h2>
-            <p>Our Quality Assurance department mandates strict compliance:</p>
-            <ul>
-              <li>QMS ISO 9001:2015 & OHSMS ISO 45001:2018</li>
-              <li>Food Grade: ISO 22000:2018, FSSC 22000, BRCGS</li>
-              <li>HALAL Certified</li>
-              <li>Government of India Food & Drug Administration Certified</li>
-            </ul>
-            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>
-              * Our auditors are certified for assessment and implementation across all aforementioned areas.
-            </p>
-          </div>
-        </section>
-
-        {/* Spacer at bottom to allow scrolling past the last element */}
-        <div style={{ height: '20vh' }}></div>
+        {ABOUT_SECTIONS.map((section, index) => (
+          <section
+            key={section.id}
+            className={`about-section ${index % 2 === 1 ? 'about-section--right' : ''}`}
+            ref={addToRefs}
+            data-section={section.id}
+          >
+            <div className="about-card">
+              <span className="about-card__index">{String(index + 1).padStart(2, '0')}</span>
+              <h2>{section.title}</h2>
+              {section.text && (
+                <p>
+                  {section.highlight ? (
+                    <>
+                      {section.text.split(section.highlight)[0]}
+                      <strong>{section.highlight}</strong>
+                      {section.text.split(section.highlight)[1]}
+                    </>
+                  ) : (
+                    section.text
+                  )}
+                </p>
+              )}
+              {section.certifications && (
+                <>
+                  <p>Our Quality Assurance department mandates strict compliance:</p>
+                  <ul>
+                    {section.certifications.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  {section.footnote && (
+                    <p className="about-card__footnote">{section.footnote}</p>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+        ))}
+        <div className="about-scroll-end" aria-hidden="true" />
       </div>
     </div>
   );

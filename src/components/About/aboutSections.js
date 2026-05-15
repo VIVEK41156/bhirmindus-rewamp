@@ -1,0 +1,51 @@
+export const ABOUT_SECTIONS = [
+  {
+    id: 'global',
+    title: 'Global Presence',
+    image: '/about/about-global.png',
+    position: [3.2, 0, 0],
+    camera: { position: [0, 0.2, 7.5], lookAt: [3.2, 0, 0] },
+    text: `We are incorporated in the UK, India, and Europe, effectively serving as the export sales function for our investment holding's manufacturing portfolio. Our international reach ensures seamless delivery and unwavering support worldwide.`,
+  },
+  {
+    id: 'capacity',
+    title: 'Massive Capacity',
+    image: '/about/about-capacity.png',
+    position: [-3.2, 0.4, -14],
+    camera: { position: [0.4, 0.6, -6.5], lookAt: [-3.2, 0.4, -14] },
+    text: `Our state-of-the-art South Indian facility is capable of producing 8000 tons of premium industrial and native food-grade starches and starch derivatives. We combine scale with precision engineering to meet the demands of modern industry.`,
+    highlight: '8000 tons',
+  },
+  {
+    id: 'supplies',
+    title: 'Essential Supplies',
+    image: '/about/about-supplies.png',
+    position: [3.2, -0.2, -28],
+    camera: { position: [-0.2, 0.2, -20.5], lookAt: [3.2, -0.2, -28] },
+    text: `Beyond industrial derivatives, we supply staple items including high-quality rice and pulses. We proudly serve the education and hospitality sectors across South India, ensuring consistent, top-tier agricultural products.`,
+  },
+  {
+    id: 'logistics',
+    title: 'Global Logistics',
+    image: '/about/about-logistics.png',
+    position: [-3.2, 0.1, -42],
+    camera: { position: [0.3, 0.35, -34.5], lookAt: [-3.2, 0.1, -42] },
+    text: `Our freight forwarding partner is extremely reliable and highly competent. Whether you need materials locally or shipped anywhere internationally, our robust supply chain guarantees timely and secure delivery.`,
+  },
+  {
+    id: 'quality',
+    title: 'Uncompromising Quality',
+    image: '/about/about-quality.png',
+    position: [0, 0, -56],
+    camera: { position: [0, 0.25, -48.5], lookAt: [0, 0, -56] },
+    text: null,
+    certifications: [
+      'QMS ISO 9001:2015 & OHSMS ISO 45001:2018',
+      'Food Grade: ISO 22000:2018, FSSC 22000, BRCGS',
+      'HALAL Certified',
+      'Government of India Food & Drug Administration Certified',
+    ],
+    footnote:
+      '* Our auditors are certified for assessment and implementation across all aforementioned areas.',
+  },
+];
