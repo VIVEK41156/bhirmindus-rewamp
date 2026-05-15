@@ -1,165 +1,148 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight } from 'lucide-react';
 
-const STEP_H = 520;
-const ORIGIN_H = 200;
+gsap.registerPlugin(ScrollTrigger);
 
-function buildRibbonPath(nodeCount) {
-  const w = 200;
-  const cx = w / 2;
-  let y = 60;
-  let d = `M ${cx} ${y}`;
-
-  for (let i = 0; i < nodeCount; i++) {
-    const nextY = y + STEP_H;
-    const bendX = i % 2 === 0 ? cx - 62 : cx + 62;
-    const midY = y + STEP_H * 0.48;
-    d += ` C ${cx} ${midY - 30}, ${bendX} ${midY}, ${bendX} ${nextY - 70}`;
-    d += ` S ${cx} ${nextY - 25}, ${cx} ${nextY}`;
-    y = nextY;
-  }
-
-  return { d, height: y + 120, width: w };
-}
-
-export default function ProjectsFlow({ projects, trackRef }) {
-  const pathRef = useRef(null);
-  const glowRef = useRef(null);
+export default function ProjectsFlow({ projects, onProgress, onActiveIndex }) {
+  const trackRef = useRef(null);
   const stepsRef = useRef([]);
-
-  const { d, height, width } = useMemo(
-    () => buildRibbonPath(projects.length),
-    [projects.length]
-  );
-
-  const gradientStops = useMemo(() => {
-    const stops = [{ offset: '0%', color: '#3D3DB8' }];
-    projects.forEach((p, i) => {
-      stops.push({
-        offset: `${((i + 1) / (projects.length + 1)) * 100}%`,
-        color: p.accent,
-      });
-    });
-    stops.push({ offset: '100%', color: '#C8A96E' });
-    return stops;
-  }, [projects]);
+  const originRef = useRef(null);
 
   useEffect(() => {
-    const path = pathRef.current;
-    const glow = glowRef.current;
-    if (!path || !trackRef?.current) return;
-
-    const len = path.getTotalLength();
-    gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
-    if (glow) gsap.set(glow, { strokeDasharray: len, strokeDashoffset: len });
+    const track = trackRef.current;
+    if (!track) return;
 
     const ctx = gsap.context(() => {
-      const drawTween = gsap.to(path, {
-        strokeDashoffset: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: trackRef.current,
-          start: 'top 60%',
-          end: 'bottom 75%',
-          scrub: 0.85,
+      ScrollTrigger.create({
+        trigger: track,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
+        onUpdate: (self) => {
+          onProgress?.(self.progress);
+          const idx = Math.min(
+            projects.length - 1,
+            Math.round(self.progress * Math.max(1, projects.length - 1))
+          );
+          onActiveIndex?.(idx);
         },
       });
 
-      if (glow) {
-        gsap.to(glow, {
-          strokeDashoffset: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: trackRef.current,
-            start: 'top 60%',
-            end: 'bottom 75%',
-            scrub: 0.85,
-          },
-        });
+      if (originRef.current) {
+        gsap.fromTo(
+          originRef.current,
+          { opacity: 0, y: 60, scale: 0.9 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 1,
+            ease: 'power4.out',
+            scrollTrigger: {
+              trigger: originRef.current,
+              start: 'top 88%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
       }
 
       stepsRef.current.forEach((step, i) => {
         if (!step) return;
-        const card = step.querySelector('.proj-flow__card');
-        const node = step.querySelector('.proj-flow__node:not(.proj-flow__node--origin)');
-        const ribbonSeg = step.querySelector('.proj-flow__seg-glow');
+        const card = step.querySelector('.proj-cine__card');
+        const node = step.querySelector('.proj-cine__node');
+        const beam = step.querySelector('.proj-cine__beam');
+        const isLeft = i % 2 === 0;
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: step,
-            start: 'top 78%',
-            toggleActions: 'play none none none',
-            once: true,
+            start: 'top top',
+            end: '+=110%',
+            pin: true,
+            pinSpacing: true,
+            scrub: 1.4,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
           },
         });
 
-        tl.fromTo(node, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)' })
+        tl.fromTo(
+          beam,
+          { scaleY: 0, opacity: 0 },
+          { scaleY: 1, opacity: 1, duration: 0.35, ease: 'power2.out' },
+          0
+        )
+          .fromTo(
+            node,
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.5)' },
+            0.08
+          )
           .fromTo(
             card,
-            { opacity: 0, y: 48, rotateY: i % 2 === 0 ? -8 : 8 },
-            { opacity: 1, y: 0, rotateY: 0, duration: 0.85, ease: 'power3.out' },
-            '-=0.2'
-          );
-
-        if (ribbonSeg) {
-          gsap.fromTo(
-            ribbonSeg,
-            { opacity: 0 },
+            {
+              opacity: 0,
+              x: isLeft ? -120 : 120,
+              z: -280,
+              rotateY: isLeft ? 28 : -28,
+              rotateX: 12,
+              scale: 0.72,
+              filter: 'blur(12px)',
+            },
             {
               opacity: 1,
-              duration: 0.6,
-              scrollTrigger: { trigger: step, start: 'top 70%', toggleActions: 'play none none none', once: true },
-            }
-          );
-        }
+              x: 0,
+              z: 0,
+              rotateY: 0,
+              rotateX: 0,
+              scale: 1,
+              filter: 'blur(0px)',
+              duration: 0.45,
+              ease: 'power3.out',
+            },
+            0.12
+          )
+          .to(
+            card,
+            {
+              opacity: 0,
+              x: isLeft ? -80 : 80,
+              z: -180,
+              rotateY: isLeft ? -18 : 18,
+              rotateX: -8,
+              scale: 0.82,
+              filter: 'blur(10px)',
+              duration: 0.4,
+              ease: 'power2.in',
+            },
+            0.55
+          )
+          .to(node, { scale: 0, opacity: 0, duration: 0.25 }, 0.7)
+          .to(beam, { scaleY: 0, opacity: 0, duration: 0.25 }, 0.72);
       });
-
-      return () => drawTween.kill();
-    }, trackRef);
+    }, track);
 
     return () => ctx.revert();
-  }, [projects, trackRef, d]);
+  }, [projects, onProgress, onActiveIndex]);
 
   return (
-    <div className="proj-flow__canvas" style={{ height: `${ORIGIN_H + projects.length * STEP_H + 180}px` }}>
-      <svg
-        className="proj-flow__svg"
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="xMidYMin meet"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="proj-flow-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-            {gradientStops.map((s) => (
-              <stop key={s.offset} offset={s.offset} stopColor={s.color} />
-            ))}
-          </linearGradient>
-          <filter id="proj-flow-blur" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <path
-          ref={glowRef}
-          className="proj-flow__path proj-flow__path--glow"
-          d={d}
-          fill="none"
-        />
-        <path ref={pathRef} className="proj-flow__path proj-flow__path--main" d={d} fill="none" />
-      </svg>
+    <div className="proj-cine__track" ref={trackRef}>
+      <div className="proj-cine__spine" aria-hidden="true">
+        <span className="proj-cine__spine-glow" />
+        <span className="proj-cine__spine-line" />
+      </div>
 
-      <div className="proj-flow__origin">
-        <div className="proj-flow__card proj-flow__card--origin">
-          <span className="proj-flow__origin-icon" aria-hidden="true">◆</span>
+      <div className="proj-cine__origin-wrap" ref={originRef}>
+        <div className="proj-cine__origin-card">
+          <span className="proj-cine__origin-mark">◆</span>
           <h2>Our Projects</h2>
-          <p>Scroll the flow</p>
+          <p>Scroll to enter the flow</p>
         </div>
-        <span className="proj-flow__node proj-flow__node--origin" aria-hidden="true" />
+        <span className="proj-cine__node proj-cine__node--origin" />
       </div>
 
       {projects.map((project, index) => {
@@ -167,39 +150,36 @@ export default function ProjectsFlow({ projects, trackRef }) {
         const detailPath = `/projects/${project.slug}`;
 
         return (
-          <div
+          <section
             key={project.id}
-            className={`proj-flow__step proj-flow__step--${side}`}
+            className={`proj-cine__step proj-cine__step--${side}`}
             ref={(el) => {
               stepsRef.current[index] = el;
             }}
-            style={{ '--flow-accent': project.accent, minHeight: `${STEP_H}px` }}
+            style={{ '--cine-accent': project.accent }}
           >
-            <span className="proj-flow__seg-glow" aria-hidden="true" />
-            <span className="proj-flow__node" aria-hidden="true" />
+            <span className="proj-cine__beam" aria-hidden="true" />
+            <span className="proj-cine__node" aria-hidden="true" />
 
-            <Link
-              to={detailPath}
-              className="proj-flow__card"
-              style={{
-                background: `linear-gradient(135deg, color-mix(in srgb, ${project.accent} 28%, #0b0c28) 0%, #0b0c28 55%)`,
-              }}
-            >
-              <div className="proj-flow__card-thumb">
-                <img src={project.image} alt="" loading={index < 2 ? 'eager' : 'lazy'} />
-              </div>
-              <div className="proj-flow__card-body">
-                <span className="proj-flow__card-num">{String(index + 1).padStart(2, '0')}</span>
-                <p className="proj-flow__card-eyebrow">{project.eyebrow}</p>
-                <h3>{project.title}</h3>
-                {project.subtitle && <p className="proj-flow__card-sub">{project.subtitle}</p>}
-                <p className="proj-flow__card-teaser">{project.teaser}</p>
-                <span className="proj-flow__card-cta">
-                  Explore <ArrowRight size={14} />
-                </span>
-              </div>
-            </Link>
-          </div>
+            <div className="proj-cine__step-inner">
+              <Link to={detailPath} className="proj-cine__card">
+                <div className="proj-cine__card-media">
+                  <img src={project.image} alt="" loading={index < 2 ? 'eager' : 'lazy'} />
+                  <span className="proj-cine__card-shine" aria-hidden="true" />
+                </div>
+                <div className="proj-cine__card-content">
+                  <span className="proj-cine__card-num">{String(index + 1).padStart(2, '0')}</span>
+                  <p className="proj-cine__card-eyebrow">{project.eyebrow}</p>
+                  <h3>{project.title}</h3>
+                  {project.subtitle && <p className="proj-cine__card-sub">{project.subtitle}</p>}
+                  <p className="proj-cine__card-teaser">{project.teaser}</p>
+                  <span className="proj-cine__card-cta">
+                    Explore project <ArrowRight size={15} />
+                  </span>
+                </div>
+              </Link>
+            </div>
+          </section>
         );
       })}
     </div>
