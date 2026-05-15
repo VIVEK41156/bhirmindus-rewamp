@@ -1,10 +1,10 @@
 import { useRef, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Image } from '@react-three/drei';
+import { Image, Float, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import { ABOUT_SECTIONS } from './aboutSections';
 
-const PANEL_SCALE = [4.2, 2.45, 1];
+const PANEL_BASE = [5.2, 3.05, 1];
 
 function lerpWaypoint(progress, key) {
   const t = progress * (ABOUT_SECTIONS.length - 1);
@@ -31,45 +31,128 @@ function ScrollCamera({ scrollProgress }) {
     pos.current.set(px, py, pz);
     lookTarget.current.set(lx, ly, lz);
 
-    camera.position.lerp(pos.current, 0.14);
+    camera.position.lerp(pos.current, 0.12);
     camera.lookAt(lookTarget.current);
   });
 
   return null;
 }
 
-function SectionPanel({ section, index, scrollProgress }) {
-  const groupRef = useRef();
-  const focus =
-    ABOUT_SECTIONS.length > 1
-      ? 1 - Math.min(1, Math.abs(scrollProgress * (ABOUT_SECTIONS.length - 1) - index))
-      : 1;
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const scale = 0.88 + focus * 0.12;
-    groupRef.current.scale.setScalar(scale);
-    groupRef.current.rotation.y = (1 - focus) * (index % 2 === 0 ? 0.18 : -0.18);
-  });
-
+function DepthFrame({ width, height, focus }) {
+  const depth = 0.14 + focus * 0.06;
   return (
-    <group ref={groupRef} position={section.position}>
-      <mesh position={[0, 0, -0.06]}>
-        <planeGeometry args={[PANEL_SCALE[0] + 0.2, PANEL_SCALE[1] + 0.2]} />
-        <meshBasicMaterial color="#2D2D96" transparent opacity={0.35 + focus * 0.25} />
+    <group>
+      <mesh position={[0, 0, -depth - 0.08]}>
+        <boxGeometry args={[width + 0.35, height + 0.35, depth]} />
+        <meshStandardMaterial
+          color="#1a1a4a"
+          metalness={0.65}
+          roughness={0.35}
+          emissive="#2D2D96"
+          emissiveIntensity={0.15 + focus * 0.35}
+        />
       </mesh>
-      <Image
-        url={section.image}
-        scale={PANEL_SCALE}
-        transparent
-        opacity={0.55 + focus * 0.45}
-        toneMapped={false}
-      />
+      <mesh position={[0, 0, -0.02]}>
+        <planeGeometry args={[width + 0.12, height + 0.12]} />
+        <meshBasicMaterial color="#C8A96E" transparent opacity={0.12 + focus * 0.28} />
+      </mesh>
     </group>
   );
 }
 
-function SceneContent({ scrollProgress }) {
+function SectionPanel({ section, index, scrollProgress, activeIndex }) {
+  const groupRef = useRef();
+  const glowRef = useRef();
+  const imageRef = useRef();
+  const focusRef = useRef(0);
+
+  const focusFromScroll =
+    ABOUT_SECTIONS.length > 1
+      ? 1 - Math.min(1, Math.abs(scrollProgress * (ABOUT_SECTIONS.length - 1) - index))
+      : 1;
+  const focusFromActive = index === activeIndex ? 1 : 0;
+  const focus = Math.max(focusFromScroll, focusFromActive * 0.85);
+  focusRef.current = focus;
+
+  const w = PANEL_BASE[0];
+  const h = PANEL_BASE[1];
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const t = state.clock.elapsedTime;
+    const scale = 0.9 + focus * 0.22;
+    groupRef.current.scale.setScalar(scale);
+
+    const faceCamera = focus * 0.22;
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(
+      groupRef.current.rotation.y,
+      (index % 2 === 0 ? -1 : 1) * (1 - focus) * 0.28 + faceCamera * 0.08,
+      0.08
+    );
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(
+      groupRef.current.rotation.x,
+      Math.sin(t * 0.4 + index) * 0.02 * focus,
+      0.06
+    );
+    groupRef.current.position.z = THREE.MathUtils.lerp(
+      groupRef.current.position.z,
+      section.position[2] + focus * 1.8,
+      0.06
+    );
+
+    if (glowRef.current) {
+      glowRef.current.material.opacity = 0.08 + focus * 0.35;
+    }
+    if (imageRef.current?.material) {
+      imageRef.current.material.opacity = 0.72 + focus * 0.28;
+    }
+  });
+
+  return (
+    <Float speed={1.2 + index * 0.15} rotationIntensity={0.08} floatIntensity={0.35 + focus * 0.4}>
+      <group ref={groupRef} position={section.position}>
+        <mesh ref={glowRef} position={[0, 0, -0.35]}>
+          <planeGeometry args={[w + 1.4, h + 1.4]} />
+          <meshBasicMaterial color="#3D3DB8" transparent opacity={0.2} />
+        </mesh>
+
+        <DepthFrame width={w} height={h} focus={focus} />
+
+        <Image
+          ref={imageRef}
+          url={section.image}
+          scale={[w, h, 1]}
+          transparent
+          opacity={0.85}
+          toneMapped={false}
+        />
+
+        <pointLight
+          position={[0.8, 0.6, 1.2]}
+          intensity={0.4 + focus * 1.4}
+          color="#C8A96E"
+          distance={12}
+        />
+      </group>
+    </Float>
+  );
+}
+
+function AmbientParticles() {
+  return (
+    <Sparkles
+      count={120}
+      scale={[40, 18, 80]}
+      position={[0, 2, -28]}
+      size={1.2}
+      speed={0.25}
+      opacity={0.35}
+      color="#3D3DB8"
+    />
+  );
+}
+
+function SceneContent({ scrollProgress, activeIndex }) {
   const gridRef = useRef();
 
   useFrame((_, delta) => {
@@ -85,13 +168,16 @@ function SceneContent({ scrollProgress }) {
   return (
     <>
       <color attach="background" args={['#06071A']} />
-      <fog attach="fog" args={['#06071A', 12, 70]} />
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[6, 8, 4]} intensity={1.1} color="#3D3DB8" />
-      <directionalLight position={[-4, 2, -8]} intensity={0.35} color="#C8A96E" />
+      <fog attach="fog" args={['#06071A', 14, 85]} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[6, 10, 5]} intensity={1.25} color="#3D3DB8" />
+      <directionalLight position={[-5, 3, -10]} intensity={0.45} color="#C8A96E" />
+      <hemisphereLight args={['#3D3DB8', '#06071A', 0.35]} />
 
-      <group ref={gridRef} position={[0, -2.2, 0]}>
-        <gridHelper args={[80, 40, '#2D2D96', '#141530']} position={[0, 0, -28]} />
+      <AmbientParticles />
+
+      <group ref={gridRef} position={[0, -2.4, 0]}>
+        <gridHelper args={[90, 45, '#2D2D96', '#141530']} position={[0, 0, -28]} />
       </group>
 
       {ABOUT_SECTIONS.map((section, index) => (
@@ -100,6 +186,7 @@ function SceneContent({ scrollProgress }) {
           section={section}
           index={index}
           scrollProgress={scrollProgress}
+          activeIndex={activeIndex}
         />
       ))}
 
@@ -108,15 +195,15 @@ function SceneContent({ scrollProgress }) {
   );
 }
 
-export default function About3DScene({ scrollProgress }) {
+export default function About3DScene({ scrollProgress, activeIndex = 0 }) {
   return (
     <Canvas
-      camera={{ position: [0, 0.2, 7.5], fov: 42, near: 0.1, far: 120 }}
+      camera={{ position: [0, 0.2, 7.5], fov: 48, near: 0.1, far: 120 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: false }}
     >
       <Suspense fallback={null}>
-        <SceneContent scrollProgress={scrollProgress} />
+        <SceneContent scrollProgress={scrollProgress} activeIndex={activeIndex} />
       </Suspense>
     </Canvas>
   );
