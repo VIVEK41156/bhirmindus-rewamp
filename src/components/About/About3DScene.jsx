@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Stars, TorusKnot, Sphere, Box, Points, PointMaterial, useGLTF } from '@react-three/drei';
 import gsap from 'gsap';
@@ -153,7 +153,9 @@ export default function About3DScene({ scrollProgress }) {
       <ambientLight intensity={0.2} />
       
       <CameraController scrollProgress={scrollProgress} />
-      <SceneObjects scrollProgress={scrollProgress} />
+      <Suspense fallback={null}>
+        <SceneObjects scrollProgress={scrollProgress} />
+      </Suspense>
     </Canvas>
   );
 }
